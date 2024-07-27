@@ -1,0 +1,143 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    background-color: #f8f8f8;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    height: 8%;
+    font-size: x-large;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    background-color: #e0e0e0;
+    width: 30%;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar-content {
+    margin-left: 5%;
+}
+
+h1 {
+    margin-bottom: 3%;
+}
+
+button {
+    padding: .3%;
+}
+
+.unit-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3%;
+}
+
+.unit-container p {
+    margin-right: 8px;
+}
+
+.unit-text {
+    width: 15%;
+}
+
+.pixels-to-unit {
+    width: 14%;
+    margin-right: 10px;
+}
+
+.sidebar-change-view .item {
+    margin-bottom: 3%;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+}
+
+.main-content-header {
+    background-color: #a0a0a0;
+    height: 6%;
+    display: flex;
+    align-items: center;
+}
+
+input[type="checkbox"]{
+    margin-right: 1%;
+}
+
+.main-content-header {
+    padding-left: 1%;
+}
+
+.upload-form {
+    display: flex;
+    align-items: center;
+}
+
+.file-input {
+    margin-right: 1%;
+}
+.upload-button {
+    margin-right: 10%;
+}
+
+.image-container {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+}
+.image-container img {
+    max-width: 70%;
+    min-height: 86.65%;
+    max-height: 86.65%;
+    position: absolute;
+}
+
+.point {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: limegreen;
+    border-radius: 50%;
+    border: 1px solid black;    
+    transform: translate(-50%, -50%);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}

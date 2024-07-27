@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Particle Size Distribution Analyzer</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">Coffee Particle Size Distribution Analyzer</div>
+        <div class="content">
+            <div class="sidebar">
+                <div class="sidebar-content">
+                    <div>
+                        <h1>Image Scale</h1>
+                        <div class="unit-container">
+                            <p>Units</p>
+                            <select id="unit-select" onchange="setUnit()">
+                                <option value="cm">cm</option>
+                                <option value="in">in</option>
+                            </select>
+                        </div>
+                        <div class="unit-container">
+                            <p>Scale:</p>
+                            <input class="pixels-to-unit" id="pixels-to-unit" type="number" readonly>
+                            <p class="unit-text" id="unit">pixels/cm</p>
+                            <input class="item" id="change-scale" type="checkbox">Change Scale<br>
+                        </div>
+                    </div>
+                    <div class="sidebar-change-view">
+                        <h1>Change View</h1>
+                        <input class="item" type="checkbox" id="removeClumps">Remove Clumps<br>
+                        <button class="item" onclick="useImage('')">Original</button><br>
+                        <button class="item" onclick="useImage('_black_and_white')">Black and White</button><br>
+                    </div>
+                    <div>
+                        <h1>Particle Size Distribution</h1>
+                        <button onclick="calculateAreas()">Calculate Areas</button><br>
+                        <table>
+                            <tr>
+                                <td>Mean Particle Size</td>
+                                <td>Row 1, Cell 2</td>
+                            </tr>
+                            <tr>
+                                <td>Median Particle Size</td>
+                                <td>Row 2, Cell 2</td>
+                            </tr>
+                            <tr>
+                                <td>Standard Deviation</td>
+                                <td>Row 3, Cell 2</td>
+                            </tr>
+                            <tr>
+                                <td>Fine Percentage under 100 μm</td>
+                                <td>Row 3, Cell 2</td>
+                            </tr>
+                            <tr>
+                                <td>Bolder Percentage over 1000 μm</td>
+                                <td>Row 3, Cell 2</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="main-content-header">
+                    <form class="upload-form" id="upload-form" method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+                        <input class="file-input" id="file-input" type="file" name="file" accept="image/*" required>
+                        <button class="upload-button" type="submit">Upload</button>
+                    </form>
+                        <button onclick="useImage('demo')">Use Demo Image</button>
+                </div>
+                <div class="image-container" id="image-container">
+                    <img id="img" src="" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let image_div_height;
+        let unit = 'cm';
+        let pixels_to_unit = 1; 
+        let points = [];
+        let clump = 'original';
+        let image = '';
+        const unit_select_checkbox = document.getElementById('change-scale');
+
+        function setUnit() {
+            const selectElement = document.getElementById('unit-select');
+            const selectedOption = selectElement.options[selectElement.selectedIndex].text;
+            
+            unit = selectedOption;
+
+            const paragraphElement = document.getElementById('unit');
+            paragraphElement.textContent = 'pixels/' + selectedOption;
+        }
+
+        const params = new URLSearchParams({ pixels_to_unit: pixels_to_unit.toString() });
+
+        function calculateAreas() {
+            fetch('/calculate-areas?' + params.toString())
+            .then(response => response.json())
+            .then(data => {
+                console.log(JSON.stringify(data));
+            })
+            .catch(error => console.error('Error fetching data:', error));
+        }
+
+        unit_select_checkbox.addEventListener('change', function() {
+            if (!unit_select_checkbox.checked) {
+                const dots = document.querySelectorAll('.point');
+                dots.forEach(dot => dot.remove());
+                points.length = null;
+            }
+            if (unit_select_checkbox.checked) {
+                document.getElementById('pixels-to-unit').value = '';
+            }
+        });
+
+
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        image_height = img.height;
+                        localStorage.setItem('image_height', image_height);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('img').addEventListener('click', function(event) {
+            if (unit_select_checkbox.checked) {
+                let x = event.pageX;
+                let y = event.pageY;
+
+                let pointDiv = document.createElement('div');
+                pointDiv.classList.add('point');
+                pointDiv.style.left = x + 'px';
+                pointDiv.style.top = y + 'px';
+                document.getElementById('image-container').appendChild(pointDiv);
+
+                points.push({x: x, y: y});
+
+                if (points.length > 2) {
+                    document.querySelector('.point').remove();
+                    points.shift();
+                }
+
+                if (points.length === 2) {
+                    let dx = points[1].x - points[0].x;
+                    let dy = points[1].y - points[0].y;
+                    let distance = (Math.sqrt(dx * dx + dy * dy) *  localStorage.getItem('image_height') / image_div_height).toFixed(2);
+                    // distance = distance * image_height / image_div_height;
+                    document.getElementById('pixels-to-unit').value = distance;
+                    pixels_to_unit = distance;
+                }
+            }
+        });
+
+        function useImage(type) {
+            let img = document.getElementById('img');
+            img.src =`./static/uploads/${clump}${type}.png`;
+
+            image_type = type;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const image_div = document.getElementById("image-container");
+            image_div_height = image_div.offsetHeight;
+            
+            console.log(image_div_height);
+            useImage('');
+        });
+
+        document.getElementById('removeClumps').addEventListener('change', function() {
+            if (this.checked) {
+                clump = 'no_clumps'
+            } else {
+                clump = 'original'
+            }
+            useImage(image_type)
+
+        });
+    </script>
+</body>
+</html>
